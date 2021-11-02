@@ -22,5 +22,4 @@ while True:
                 if a.dogPlay(int(input()), int(input())):
                     break
                 print("Entrada inválida")
-
-# %%
+    break

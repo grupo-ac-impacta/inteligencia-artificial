@@ -1,6 +1,6 @@
-# %%
 import networkx as nx
 import matplotlib.pyplot as plt
+
 
 class JogoDaOnca:
     C_EMPTY = 0
@@ -54,6 +54,48 @@ class JogoDaOnca:
         [31, [28, 30], [4, -6]]
     ]
 
+    JAGUAR_ROUTS = [
+        [1, [2, 6, 7], {3: 2, 13: 7, 11: 6}],
+        [2, [1, 3, 7], {4: 3, 12: 7}],
+        [3, [2, 4, 7, 8, 9], {1: 2, 5: 4, 11: 7, 15: 9, 13: 8}],
+        [4, [3, 5, 9], {2: 3, 14: 9}],
+        [5, [4, 9, 10], {13: 9, 15: 10}],
+
+        [6, [1, 7, 11], {8: 7, 16: 11}],
+        [7, [1, 2, 3, 6, 8, 11, 12, 13], {17: 12, 19: 13, 9: 8}],
+        [8, [3, 7, 9, 13], {6: 7, 10: 9, 18: 13}],
+        [9, [3, 4, 5, 8, 10, 13, 14, 15], {7: 8, 17: 13, 19: 14}],
+        [10, [5, 9, 15], {8: 9, 20: 15}],
+
+        [11, [6, 7, 12, 16, 17], {13: 12, 21: 16, 23: 17}],
+        [12, [7, 11, 13, 17], {14: 13, 22: 17, 2: 7}],
+        [13, [7, 8, 9, 12, 14, 17, 18, 19], {
+            3: 8, 5: 9, 15: 14, 25: 19, 23: 18, 21: 17, 11: 12, 1: 7}],
+        [14, [9, 13, 15, 19], {4: 9, 24: 19, 12: 13}],
+        [15, [9, 10, 14, 19, 20], {5: 10, 25: 20, 13: 14}],
+
+        [16, [11, 17, 21], {6: 11, 18: 17}],
+        [17, [11, 12, 13, 16, 18, 21, 22, 23], {7: 12, 19: 18, 28: 23, 9: 13}],
+        [18, [13, 17, 19, 23], {8: 13, 19: 20, 27: 23, 16: 17}],
+        [19, [13, 14, 15, 18, 20, 23, 24, 25], {9: 14, 26: 23, 17: 18, 7: 13}],
+        [20, [15, 19, 25], {10: 15, 18: 19}],
+
+        [21, [16, 17, 22], {11: 16, 13: 17, 23: 22}],
+        [22, [17, 21, 23], {12: 17, 24: 23}],
+        [23, [17, 18, 19, 22, 24, 26, 27, 28], {
+            13: 18, 15: 19, 25: 24, 31: 28, 30: 27, 29: 26, 21: 22, 11: 17}],
+        [24, [19, 23, 25], {14: 19, 22: 23}],
+        [25, [19, 20, 24], {15: 20, 23: 24, 13: 19}],
+
+        [26, [23, 27, 29], {19: 23, 28: 27}],
+        [27, [23, 26, 28, 30], {18: 23}],
+        [28, [23, 27, 31], {26: 27, 17: 23}],
+
+        [29, [26, 30], {23: 26, 31: 30}],
+        [30, [27, 29, 31], {23: 27}],
+        [31, [28, 30], {29: 30, 23: 28}]
+    ]
+
     def __init__(self):
         self.board = []
         self.status = JogoDaOnca.C_NOT_INIT
@@ -61,7 +103,7 @@ class JogoDaOnca:
     def displayBoard(self):
         G = nx.Graph()
         states = {
-            0: ' ',
+            0: '  ',
             1: 'O',
             2: 'C'
         }
@@ -70,7 +112,7 @@ class JogoDaOnca:
         for route in self.BOARD_ROUTES:
             stateNo = self.board[route[0] - 1][1]
             no = states[stateNo]
-            labeldict[route[0]] = "{}:{}".format(no, route[0])
+            labeldict[route[0]] = "{}:{}".format(route[0], no)
 
             G.add_node(route[0], pos=(route[2]))
 
@@ -79,8 +121,8 @@ class JogoDaOnca:
 
         position = nx.get_node_attributes(G, 'pos')
         plt.clf()
-        nx.draw(G, position, labels=labeldict, node_size=500,
-                node_color='cyan', with_labels=True, font_color='black')
+        nx.draw(G, position, labels=labeldict, node_size=700,
+                node_color='#FFA500', with_labels=True, font_color='black')
         plt.show()
 
     def getBoard(self):
@@ -123,7 +165,8 @@ class JogoDaOnca:
         self.board = [[x, 0] for x in range(1, 32)]
         for pos in JogoDaOnca.DOGS_INIT_POS:
             self.setPositionContent(pos, JogoDaOnca.C_DOG)
-        self.setPositionContent(JogoDaOnca.JAGUAR_INIT_POS, JogoDaOnca.C_JAGUAR)
+        self.setPositionContent(
+            JogoDaOnca.JAGUAR_INIT_POS, JogoDaOnca.C_JAGUAR)
         self.status = JogoDaOnca.C_WAIT_JAGUAR
 
     def getPossibleWalk(self, actualPos):
@@ -134,20 +177,50 @@ class JogoDaOnca:
     def canWalk(self, actualPos, newPos):
         return newPos in self.getPossibleWalk(actualPos)
 
-    def dogPlay(self, actualPos, newPos):
-        if self.getPositionContent(actualPos) == JogoDaOnca.C_DOG and self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(actualPos, newPos) and self.status == JogoDaOnca.C_WAIT_DOG:
-            self.setPositionContent(actualPos, JogoDaOnca.C_EMPTY)
-            self.setPositionContent(newPos, JogoDaOnca.C_DOG)
-            self.status = JogoDaOnca.C_WAIT_JAGUAR
-            return True
-        else:
+    def checkQttDogs(self):
+        qtt_dogs = 0
+        for pos in JogoDaOnca.BOARD_ROUTES:
+            if self.getPositionContent(pos[0]) == 2:
+                qtt_dogs += 1
+        if qtt_dogs <= 0:
             return False
+        return True
+
+    def dogPlay(self, actualPos, newPos):
+        if self.checkQttDogs():
+            if self.getPositionContent(actualPos) == JogoDaOnca.C_DOG and self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(actualPos, newPos) and self.status == JogoDaOnca.C_WAIT_DOG:
+                self.setPositionContent(actualPos, JogoDaOnca.C_EMPTY)
+                self.setPositionContent(newPos, JogoDaOnca.C_DOG)
+                self.status = JogoDaOnca.C_WAIT_JAGUAR
+                return True
+            else:
+                return False
+        else:
+            self.status = "JAGUAR_WIN"
+            print("A onça venceu")
+
+    def getJaguarPossibleWalk(self, actualPos):
+        for pos in JogoDaOnca.JAGUAR_ROUTS:
+            if pos[0] == actualPos:
+                return pos[2]
+
+    def jaguarCanWalk(self, actualPos, newPos):
+        return self.getJaguarPossibleWalk(actualPos)[newPos]
 
     def jaguarWalk(self, newPos):
         if self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
-            self.setPositionContent(self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
+            self.setPositionContent(
+                self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
             self.setPositionContent(newPos, JogoDaOnca.C_JAGUAR)
             self.status = JogoDaOnca.C_WAIT_DOG
             return True
-        else:
-            return False
+        elif self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.jaguarCanWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
+            if self.getPositionContent(self.jaguarCanWalk(self.getJaguarPosition(), newPos)) == JogoDaOnca.C_DOG:
+                self.setPositionContent(self.jaguarCanWalk(
+                    self.getJaguarPosition(), newPos), JogoDaOnca.C_EMPTY)
+                self.setPositionContent(
+                    self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
+                self.setPositionContent(newPos, JogoDaOnca.C_JAGUAR)
+                self.status = JogoDaOnca.C_WAIT_DOG
+                return True
+        return False
