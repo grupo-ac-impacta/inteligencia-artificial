@@ -11,7 +11,7 @@ class JogoDaOnca:
     C_WAIT_DOG = "WAITING DOG"
     C_NOT_INIT = "NOT_INITIALIZED"
 
-    DOGS_INIT_POS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15]
+    DOGS_INIT_POS = [1,2,3,4,5,6,7,8,9,10,11,12,14,15]
     JAGUAR_INIT_POS = 13
 
     BOARD_ROUTES = [
@@ -123,7 +123,7 @@ class JogoDaOnca:
         plt.clf()
         nx.draw(G, position, labels=labeldict, node_size=700,
                 node_color='#FFA500', with_labels=True, font_color='black')
-        plt.show()
+        plt.show(block=False)
 
     def getBoard(self):
         self.displayBoard()
@@ -183,11 +183,35 @@ class JogoDaOnca:
             if self.getPositionContent(pos[0]) == 2:
                 qtt_dogs += 1
         if qtt_dogs <= 0:
-            return False
-        return True
+            print("A onça venceu")
+            self.status = "JAGUAR_WIN"
+            return self.status
+        return self.status
+    
+    def JaguarAround(self,actualPos):
+        free_positions = 0
+        nearby_paths = JogoDaOnca.JAGUAR_ROUTS[actualPos][1]
+        
+        for x in nearby_paths:
+            if self.getPositionContent(x) != JogoDaOnca.C_DOG:
+                free_positions += 1
+
+        if free_positions >= 1:
+            return self.status
+        
+        else:
+            distant_paths = JogoDaOnca.JAGUAR_ROUTS[actualPos][2].keys()       
+            for y in distant_paths:
+                if self.getPositionContent(y) != JogoDaOnca.C_DOG:
+                    free_positions += 1
+
+            if free_positions == 0:
+                print("Os Cachorros venceram")
+                self.status = "DOGS_WIN"
+                return self.status    
+            return self.status
 
     def dogPlay(self, actualPos, newPos):
-        if self.checkQttDogs():
             if self.getPositionContent(actualPos) == JogoDaOnca.C_DOG and self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(actualPos, newPos) and self.status == JogoDaOnca.C_WAIT_DOG:
                 self.setPositionContent(actualPos, JogoDaOnca.C_EMPTY)
                 self.setPositionContent(newPos, JogoDaOnca.C_DOG)
@@ -195,9 +219,6 @@ class JogoDaOnca:
                 return True
             else:
                 return False
-        else:
-            self.status = "JAGUAR_WIN"
-            print("A onça venceu")
 
     def getJaguarPossibleWalk(self, actualPos):
         for pos in JogoDaOnca.JAGUAR_ROUTS:
@@ -208,19 +229,19 @@ class JogoDaOnca:
         return self.getJaguarPossibleWalk(actualPos)[newPos]
 
     def jaguarWalk(self, newPos):
-        if self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
-            self.setPositionContent(
-                self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
-            self.setPositionContent(newPos, JogoDaOnca.C_JAGUAR)
-            self.status = JogoDaOnca.C_WAIT_DOG
-            return True
-        elif self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.jaguarCanWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
-            if self.getPositionContent(self.jaguarCanWalk(self.getJaguarPosition(), newPos)) == JogoDaOnca.C_DOG:
-                self.setPositionContent(self.jaguarCanWalk(
-                    self.getJaguarPosition(), newPos), JogoDaOnca.C_EMPTY)
+            if self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.canWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
                 self.setPositionContent(
                     self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
                 self.setPositionContent(newPos, JogoDaOnca.C_JAGUAR)
                 self.status = JogoDaOnca.C_WAIT_DOG
                 return True
-        return False
+            elif self.getPositionContent(newPos) == JogoDaOnca.C_EMPTY and self.jaguarCanWalk(self.getJaguarPosition(), newPos) and self.status == JogoDaOnca.C_WAIT_JAGUAR:
+                if self.getPositionContent(self.jaguarCanWalk(self.getJaguarPosition(), newPos)) == JogoDaOnca.C_DOG:
+                    self.setPositionContent(self.jaguarCanWalk(
+                        self.getJaguarPosition(), newPos), JogoDaOnca.C_EMPTY)
+                    self.setPositionContent(
+                        self.getJaguarPosition(), JogoDaOnca.C_EMPTY)
+                    self.setPositionContent(newPos, JogoDaOnca.C_JAGUAR)
+                    self.status = JogoDaOnca.C_WAIT_DOG
+                    return True
+            return False
