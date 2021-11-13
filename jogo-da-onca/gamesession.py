@@ -10,6 +10,8 @@ while True:
     a.newBoard()
     while a.getStatus() not in ["JAGUAR_WIN", "DOGS_WIN"]:
         a.getBoard()
+        a.JaguarAround(a.getJaguarPosition()-1)
+        a.checkQttDogs()
         if a.getStatus() == C_WAIT_JAGUAR:
             print("Vez da Onça")
             while True:
